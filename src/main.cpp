@@ -34,14 +34,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 // Incoming messages
 String LoRaData;
 
-void setup()
-{
-  //Initial Serial
-  Serial.begin(115200);
-
-  while (!Serial);
-
-  //Reset OLED display via software
+void setupOLEDDisplay(){
+ //Reset OLED display via software
   pinMode(OLED_RST, OUTPUT);
   digitalWrite(OLED_RST, LOW);
   delay(20);
@@ -63,7 +57,25 @@ void setup()
   display.display();
   Serial.println("OLED Display Initializing OK!");
   delay(2000);
+}
 
+void displayMessage(String LoRaData, int rssi){
+  // Display informations
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.print("LORA RECEIVER");
+  display.setCursor(0, 20);
+  display.print("Received packet:");
+  display.setCursor(0, 30);
+  display.print(LoRaData);
+  display.setCursor(0, 40);
+  display.print("RSSI:");
+  display.setCursor(30, 40);
+  display.print(rssi);
+  display.display();
+}
+
+void setupLoRa(){
   //SPI LoRa pins
   SPI.begin(SCK, MISO, MOSI, SS);
 
@@ -77,6 +89,20 @@ void setup()
       ;
   }
   Serial.println("LoRa Initializing OK!");
+
+  delay(2000);
+}
+
+void setup()
+{
+  //Initial Serial
+  Serial.begin(115200);
+
+  while (!Serial);
+
+  setupOLEDDisplay();
+
+  setupLoRa();
   display.setCursor(0, 20);
   display.println("LoRa Initializing OK!");
   display.display();
@@ -110,18 +136,6 @@ void loop()
     Serial.print(" with RSSI ");
     Serial.println(rssi);
 
-    // Display informations
-    display.clearDisplay();
-    display.setCursor(0, 0);
-    display.print("LORA RECEIVER");
-    display.setCursor(0, 20);
-    display.print("Received packet:");
-    display.setCursor(0, 30);
-    display.print(LoRaData);
-    display.setCursor(0, 40);
-    display.print("RSSI:");
-    display.setCursor(30, 40);
-    display.print(rssi);
-    display.display();
+    displayMessage(LoRaData, rssi);
   }
 }
