@@ -5,6 +5,9 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_I2CDevice.h>
+#include <WiFi.h>
+#include <WiFiMulti.h>
+#include "wifi_secrets.h"
 
 // Pinout Diagram: https://resource.heltec.cn/download/WiFi_LoRa_32/WIFI_LoRa_32_V2.pdf
 
@@ -31,11 +34,15 @@
 #define SCREEN_ADDRESS 0x3C
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RST);
 
+// Declaration for WiFi
+WiFiMulti WiFiMulti;
+
 // Incoming messages
 String LoRaData;
 
-void setupOLEDDisplay(){
- //Reset OLED display via software
+void setupOLEDDisplay()
+{
+  //Reset OLED display via software
   pinMode(OLED_RST, OUTPUT);
   digitalWrite(OLED_RST, LOW);
   delay(20);
@@ -53,29 +60,44 @@ void setupOLEDDisplay(){
   display.setTextColor(WHITE);
   display.setTextSize(1);
   display.setCursor(0, 0);
-  display.print("OLED Display Initializing OK!");
+  display.print("OLED Display Initializing...OK!");
   display.display();
   Serial.println("OLED Display Initializing OK!");
-  delay(2000);
+  delay(500);
 }
 
-void displayMessage(String LoRaData, int rssi){
+void displayLoRaMessage(String LoRaData, int rssi)
+{
   // Display informations
   display.clearDisplay();
+
   display.setCursor(0, 0);
   display.print("LORA RECEIVER");
+  
+  display.setCursor(0, 10);
+  display.print("MAC:");
+  display.print(WiFi.macAddress());
+  
   display.setCursor(0, 20);
-  display.print("Received packet:");
+  display.print("IP:");
+  display.print(WiFi.localIP());
+
   display.setCursor(0, 30);
-  display.print(LoRaData);
+  display.print("Received packet:");
+
   display.setCursor(0, 40);
+  display.print(LoRaData);
+
+  display.setCursor(0, 50);
   display.print("RSSI:");
-  display.setCursor(30, 40);
+
+  display.setCursor(30, 50);
   display.print(rssi);
   display.display();
 }
 
-void setupLoRa(){
+void setupLoRa()
+{
   //SPI LoRa pins
   SPI.begin(SCK, MISO, MOSI, SS);
 
@@ -90,7 +112,26 @@ void setupLoRa(){
   }
   Serial.println("LoRa Initializing OK!");
 
-  delay(2000);
+  delay(500);
+}
+
+void setupWifi()
+{
+  // We start by connecting to a WiFi network
+  WiFiMulti.addAP(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("Waiting for WiFi... ");
+  while (WiFiMulti.run() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    delay(500);
+  }
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  Serial.println("MAC address: ");
+  Serial.println(WiFi.macAddress());
+  
+  delay(500);
 }
 
 void setup()
@@ -98,15 +139,25 @@ void setup()
   //Initial Serial
   Serial.begin(115200);
 
-  while (!Serial);
+  while (!Serial)
+    ;
 
   setupOLEDDisplay();
 
-  setupLoRa();
   display.setCursor(0, 20);
-  display.println("LoRa Initializing OK!");
+  display.println("WiFi Initializing...");
   display.display();
-  delay(2000);
+  setupWifi();
+  display.println("OK!");
+  display.display();
+
+  display.setCursor(0, 30);
+  display.println("LoRa Initializing...");
+  display.display();
+  setupLoRa();
+  display.print("OK!");
+  display.display();
+  delay(500);
 
   // Uncomment the next line to disable the default AGC and set LNA gain, values between 1 - 6 are supported
   // LoRa.setGain(6);
@@ -136,6 +187,6 @@ void loop()
     Serial.print(" with RSSI ");
     Serial.println(rssi);
 
-    displayMessage(LoRaData, rssi);
+    displayLoRaMessage(LoRaData, rssi);
   }
 }
