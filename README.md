@@ -11,4 +11,12 @@
 #define WIFI_PASSWORD "your_wifi_password"
 ```
 
+- Create a file ``src/HA_secrets.h`` containing
+  
+```cpp
+#define HA_ENDPOINT "your_ha_endpoint"
+#define HA_API_PORT "your_ha_api_port"
+#define HA_BEARER_TOKEN "your_ha_bearer_token"
+```
+
 - Compile and upload
