@@ -14,7 +14,7 @@ public:
     String HA_bearer_token;
     String HA_endpoint;
     int HA_API_port;
-    HAClient(WiFiClientSecure *client, String HA_endpoint, int HA_API_port, String HA_bearer_token);
-    bool updateState(String entity_id, String payload);
+HAClient(WiFiClientSecure *client, String HA_endpoint, int HA_API_port, String HA_bearer_token);
+    bool updateState(const String& entity_id,const String& payload);
 };
 #endif

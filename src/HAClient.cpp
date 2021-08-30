@@ -8,7 +8,7 @@ HAClient::HAClient(WiFiClientSecure *client, String HA_endpoint, int HA_API_port
     this->HA_bearer_token = HA_bearer_token;
 }
 
-bool HAClient::updateState(String entity_id, String payload)
+bool HAClient::updateState(const String& entity_id,const String& payload)
 {
     bool success=true;
     if (this->client)
@@ -35,9 +35,7 @@ bool HAClient::updateState(String entity_id, String payload)
             // print 
             if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY)
             {
-                //TODO: fix it
-                String payload = https.getString();
-                Serial.println(payload);
+                Serial.printf("[HTTPS] RETURN CODE:%d",httpCode);
             } else {
                 success=false;
             }

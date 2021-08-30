@@ -63,6 +63,8 @@ WiFiClientSecure client;
 
 // Incoming messages
 String LoRaData;
+String LoRaDevice;
+String LoRaPayload;
 
 // Declaration for Home Assistant 
 HAClient ha(&client, HA_ENDPOINT,HA_API_PORT,HA_BEARER_TOKEN);
@@ -87,33 +89,33 @@ void setupOLEDDisplay()
   display.setTextColor(WHITE);
   display.setTextSize(1);
   display.setCursor(0, 0);
-  display.print("OLED Display...OK!");
+  display.print(F("OLED Display...OK!"));
   display.display();
-  Serial.println("OLED Display...OK!");
+  Serial.println(F("OLED Display...OK!"));
   delay(500);
 }
 
-void displayLoRaPacket(String LoRaDevice, int rssi, boolean HA_transmitted)
+void displayLoRaPacket(const String& LoRaDevice, int rssi, boolean HA_transmitted)
 {
   // Display informations
   display.clearDisplay();
 
   display.setCursor(0, 0);
-  display.print("LORA GATEWAY");
+  display.print(F("LORA GATEWAY"));
 
   display.setCursor(0, 10);
-  display.print("packet received from:");
+  display.print(F("packet received from:"));
   display.print(LoRaDevice);
 
   display.setCursor(0, 40);
-  display.print("RSSI:");
+  display.print(F("RSSI:"));
   display.print(rssi);
-  display.print("dBm");
+  display.print(F("dBm"));
 
   display.setCursor(0, 50);
-  display.print("transmitted to HA:");  
-  if(HA_transmitted) display.print("yes");
-  else display.print("no");
+  display.print(F("transmitted to HA:"));  
+  if(HA_transmitted) display.print(F("yes"));
+  else display.print(F("no"));
   
   display.display();
 }
@@ -128,11 +130,11 @@ void setupLoRa()
 
   if (!LoRa.begin(BAND))
   {
-    Serial.println("Starting LoRa failed!");
+    Serial.println(F("Starting LoRa failed!"));
     while (1)
       ;
   }
-  Serial.println("LoRa Initializing OK!");
+  Serial.println(F("LoRa Initializing OK!"));
 
   delay(500);
 }
@@ -141,18 +143,18 @@ void setupWifi()
 {
   // We start by connecting to a WiFi network
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print("Waiting for WiFi... ");
+  Serial.print(F("Waiting for WiFi... "));
   while (WiFi.status() != WL_CONNECTED)
   {
     Serial.print(".");
     delay(500);
   }
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
+  Serial.println(F("WiFi connected"));
+  Serial.println(F("IP address: "));
   Serial.println(WiFi.localIP());
-  Serial.println("MAC address: ");
+  Serial.println(F("MAC address: "));
   Serial.println(WiFi.macAddress());
-  Serial.println("Add root CA Certificate");
+  Serial.println(F("Add root CA Certificate"));
   client.setCACert(rootCACertificate);
 
   delay(500);
@@ -179,11 +181,11 @@ void setupNTP(){
   Serial.print(asctime(&timeinfo));
 }
 
-String decodeLoRaDevice(String LoRaData){
+String decodeLoRaDevice(const String& LoRaData){
   return LoRaData.substring(0,LoRaData.indexOf("|"));
 }
 
-String decodeLoRaPayload(String LoRaData){
+String decodeLoRaPayload(const String& LoRaData){
   return LoRaData.substring(LoRaData.indexOf("|")+1,LoRaData.length());
 }
 
@@ -198,24 +200,24 @@ void setup()
   setupOLEDDisplay();
 
   display.setCursor(0, 10);
-  display.print("WiFi...");
+  display.print(F("WiFi..."));
   display.display();
   setupWifi();
-  display.print("OK!");
+  display.print(F("OK!"));
   display.display();
 
   display.setCursor(0, 20);
-  display.print("NTP...");
+  display.print(F("NTP..."));
   display.display();
   setupNTP();
-  display.print("OK!");
+  display.print(F("OK!"));
   display.display();
 
   display.setCursor(0, 30);
-  display.print("LoRa...");
+  display.print(F("LoRa..."));
   display.display();
   setupLoRa();
-  display.print("OK!");
+  display.print(F("OK!"));
   display.display();
   delay(500);
 
@@ -233,7 +235,7 @@ void loop()
   if (packetSize)
   {
     //received a packet
-    Serial.print("Received packet ");
+    Serial.print(F("Received packet "));
 
     //read packet
     while (LoRa.available())
@@ -245,18 +247,19 @@ void loop()
 
     //print RSSI of packet
     int rssi = LoRa.packetRssi();
-    Serial.print(" with RSSI ");
+    Serial.print(F(" with RSSI "));
     Serial.println(rssi);
-    Serial.print("Lora Data device: ");
+    Serial.print(F("Lora Data device: "));
     Serial.println(decodeLoRaDevice(LoRaData));
-    Serial.print("Lora Data payload: ");
+    Serial.print(F("Lora Data payload: "));
     Serial.println(decodeLoRaPayload(LoRaData));
     //TODO: optimize String usage
-    String LoRaDevice = decodeLoRaDevice(LoRaData);
-    boolean HA_transmitted = ha.updateState(LoRaDevice,decodeLoRaPayload(LoRaData));
-    Serial.print("Transmitted to Home Assistant: ");
+    LoRaDevice=decodeLoRaDevice(LoRaData);
+    LoRaPayload=decodeLoRaPayload(LoRaData);
+    boolean HA_transmitted = ha.updateState(LoRaDevice.c_str(),LoRaPayload.c_str());
+    Serial.print(F("Transmitted to Home Assistant: "));
     Serial.println(HA_transmitted);
 
-    displayLoRaPacket(LoRaDevice, rssi, HA_transmitted);
+    displayLoRaPacket(LoRaDevice.c_str(), rssi, HA_transmitted);
   }
 }
