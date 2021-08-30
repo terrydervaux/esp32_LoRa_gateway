@@ -15,7 +15,9 @@ bool HAClient::updateState(String entity_id, String payload)
     {
         // Open HTTPS connection
         HTTPClient https;
-        String uri = HA_UPDATE_STATE_ROUTE + "/" + entity_id;
+        String uri = HA_UPDATE_STATE_ROUTE;
+        uri+= "/";
+        uri+= entity_id;
         https.begin(*this->client, this->HA_endpoint, this->HA_API_port, uri, true);
 
         // Add headers
@@ -33,6 +35,7 @@ bool HAClient::updateState(String entity_id, String payload)
             // print 
             if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_MOVED_PERMANENTLY)
             {
+                //TODO: fix it
                 String payload = https.getString();
                 Serial.println(payload);
             } else {
