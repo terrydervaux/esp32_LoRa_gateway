@@ -93,27 +93,22 @@ void setupOLEDDisplay()
   delay(500);
 }
 
-void displayLoRaMessage(String LoRaData, int rssi, boolean HA_transmitted)
+void displayLoRaPacket(String LoRaDevice, int rssi, boolean HA_transmitted)
 {
   // Display informations
   display.clearDisplay();
 
   display.setCursor(0, 0);
-  display.print("LORA RECEIVER");
-  
+  display.print("LORA GATEWAY");
+
   display.setCursor(0, 10);
-  display.print("IP:");
-  display.print(WiFi.localIP());
-
-  display.setCursor(0, 20);
-  display.print("Received packet:");
-
-  display.setCursor(0, 30);
-  display.print(LoRaData);
+  display.print("packet received from:");
+  display.print(LoRaDevice);
 
   display.setCursor(0, 40);
   display.print("RSSI:");
   display.print(rssi);
+  display.print("dBm");
 
   display.setCursor(0, 50);
   display.print("transmitted to HA:");  
@@ -184,6 +179,14 @@ void setupNTP(){
   Serial.print(asctime(&timeinfo));
 }
 
+String decodeLoRaDevice(String LoRaData){
+  return LoRaData.substring(0,LoRaData.indexOf("|"));
+}
+
+String decodeLoRaPayload(String LoRaData){
+  return LoRaData.substring(LoRaData.indexOf("|")+1,LoRaData.length());
+}
+
 void setup()
 {
   //Initial Serial
@@ -235,6 +238,7 @@ void loop()
     //read packet
     while (LoRa.available())
     {
+      //TODO: optimize String usage
       LoRaData = LoRa.readString();
       Serial.print(LoRaData);
     }
@@ -243,13 +247,16 @@ void loop()
     int rssi = LoRa.packetRssi();
     Serial.print(" with RSSI ");
     Serial.println(rssi);
-    
-    boolean HA_transmitted = ha.updateState("sensor.kitchen_temperature","{\"state\": \"20\",\"attributes\": {\"unit_of_measurement\": \"°C\"}}");
-    Serial.print(" transmitted to Home Assistant: ");
+    Serial.print("Lora Data device: ");
+    Serial.println(decodeLoRaDevice(LoRaData));
+    Serial.print("Lora Data payload: ");
+    Serial.println(decodeLoRaPayload(LoRaData));
+    //TODO: optimize String usage
+    String LoRaDevice = decodeLoRaDevice(LoRaData);
+    boolean HA_transmitted = ha.updateState(LoRaDevice,decodeLoRaPayload(LoRaData));
+    Serial.print("Transmitted to Home Assistant: ");
     Serial.println(HA_transmitted);
 
-    displayLoRaMessage(LoRaData, rssi, HA_transmitted);
-
-    delay(10000);
+    displayLoRaPacket(LoRaDevice, rssi, HA_transmitted);
   }
 }
