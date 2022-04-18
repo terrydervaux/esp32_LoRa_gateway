@@ -1,0 +1,46 @@
+name: PlatformIO build
+
+on: [push]
+
+jobs:
+  build:
+    name: Build heltec wifi lora 32 V2
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: ${{ runner.os }}-pip-
+    
+    - name: Cache PlatformIO
+      uses: actions/cache@v2
+      with:
+        path: ~/.platformio
+        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+
+    - name: "Write WiFi secrets"
+      uses: "finnp/create-file-action@master"
+      env:
+        FILE_NAME: "src/wifi_secrets.h"
+        FILE_BASE64: "I2RlZmluZSBXSUZJX1NTSUQgInlvdXItd2lmaS1zc2lkIg0KI2RlZmluZSBXSUZJX1BBU1NXT1JEICJ5b3VyLXdpZmktcGFzc3dvcmQi"
+    
+    - name: "Write HA secrets"
+      uses: "finnp/create-file-action@master"
+      env:
+        FILE_NAME: "src/HA_secrets.h"
+        FILE_BASE64: "I2RlZmluZSBIQV9FTkRQT0lOVCAieW91ci1oYS1lbmRwb2ludCINCiNkZWZpbmUgSEFfQVBJX1BPUlQgODEyMw0KI2RlZmluZSBIQV9CRUFSRVJfVE9LRU4gInlvdXItaGEtYmVhcmVyLXRva2VuIg=="
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+    
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+    
+    - name: Run PlatformIO
+      run: pio run -e heltec_wifi_lora_32_V2
