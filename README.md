@@ -1,5 +1,16 @@
 # ESP32 LoRa GATEWAY
 
+## Hardware
+
+The project has been developed on **heltec wifi lora 32 V2** board. The board
+includes the following components:
+
+- LoRa Modem SemTech SX1276
+- OLED display SSD1306 0.96-inch 128x64
+
+The components are connected according to the following
+[pinout diagram](https://resource.heltec.cn/download/WiFi_LoRa_32/WIFI_LoRa_32_V2.pdf).
+
 ## Setup
 
 - Download VScode
