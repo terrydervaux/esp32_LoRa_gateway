@@ -33,8 +33,6 @@ const char *rootCACertificate =
     "Ob8VZRzI9neWagqNdwvYkQsEjgfbKbYK7p2CNTUQ\n"
     "-----END CERTIFICATE-----\n";
 
-// Pinout Diagram: https://resource.heltec.cn/download/WiFi_LoRa_32/WIFI_LoRa_32_V2.pdf
-
 // LoRa Module (SX1276)
 #define SCK 5
 #define MISO 19
