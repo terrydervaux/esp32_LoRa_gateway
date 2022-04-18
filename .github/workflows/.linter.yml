@@ -1,0 +1,11 @@
+name: Linter
+on: push
+jobs: 
+  markdownlint:
+    name: Markdown linter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Run markdownlint
+        uses: actionshub/markdownlint@2.0.2
