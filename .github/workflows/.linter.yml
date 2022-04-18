@@ -9,3 +9,12 @@ jobs:
         uses: actions/checkout@v2
       - name: Run markdownlint
         uses: actionshub/markdownlint@2.0.2
+   
+  commitlint:
+    name: Commit messages linter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: wagoid/commitlint-github-action@v4.1.11
