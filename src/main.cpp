@@ -238,23 +238,27 @@ void loop()
     {
       //TODO: optimize String usage
       LoRaData = LoRa.readString();
-      Serial.print(LoRaData);
+      
+      // decode packet
+      int rssi = LoRa.packetRssi();
+      String device = decodeLoRaDevice(LoRaData);
+      String payload = decodeLoRaPayload(LoRaData);
+
+      // print decoded packet
+      Serial.print(" with RSSI ");
+      Serial.println(rssi);
+      Serial.print("Lora Data device: ");
+      Serial.println(device);
+      Serial.print("Lora Data payload: ");
+      Serial.println(payload);
+      
+      // send to HA
+      boolean HA_transmitted = ha.updateState(device,payload);
+      Serial.print("Transmitted to Home Assistant: ");
+      Serial.println(HA_transmitted);
+
+      // display on screen.
+      displayLoRaPacket(device, rssi, HA_transmitted);
     }
-
-    //print RSSI of packet
-    int rssi = LoRa.packetRssi();
-    Serial.print(" with RSSI ");
-    Serial.println(rssi);
-    Serial.print("Lora Data device: ");
-    Serial.println(decodeLoRaDevice(LoRaData));
-    Serial.print("Lora Data payload: ");
-    Serial.println(decodeLoRaPayload(LoRaData));
-    //TODO: optimize String usage
-    String LoRaDevice = decodeLoRaDevice(LoRaData);
-    boolean HA_transmitted = ha.updateState(LoRaDevice,decodeLoRaPayload(LoRaData));
-    Serial.print("Transmitted to Home Assistant: ");
-    Serial.println(HA_transmitted);
-
-    displayLoRaPacket(LoRaDevice, rssi, HA_transmitted);
   }
 }
